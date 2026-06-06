@@ -1,7 +1,7 @@
 "use client";
 import { Wallet, LayoutDashboard, ArrowRightLeft, BarChart3, Moon, LogOut, Sun } from "lucide-react";
 
-export default function Sidebar({ activeView, setActiveView, toggleTheme, isLightMode }) {
+export default function Sidebar({ activeView, setActiveView, toggleTheme, isLightMode, onLogout }) {
   return (
     <aside>
       <div className="sidebar-logo">
@@ -54,7 +54,7 @@ export default function Sidebar({ activeView, setActiveView, toggleTheme, isLigh
         </div>
 
         <div className="auth-control-wrap" style={{ marginTop: 10 }}>
-          <button className="theme-toggle-btn" style={{ color: "var(--danger-color)" }}>
+          <button className="theme-toggle-btn" style={{ color: "var(--danger-color)" }} onClick={onLogout}>
             <span className="toggle-icon"><LogOut size={20} /></span>
             <span className="toggle-text">Log Out</span>
           </button>
