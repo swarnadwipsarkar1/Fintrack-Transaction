@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Download, Upload, Pencil, Trash2, Briefcase, ShoppingBag, Utensils, Car, Tv, HeartPulse, Home, Gift, MoreHorizontal } from "lucide-react";
+import { addTransaction, deleteTransaction } from "../lib/db";
 
 const getCategoryIcon = (category) => {
   switch (category) {
@@ -16,7 +17,7 @@ const getCategoryIcon = (category) => {
   }
 };
 
-export default function Transactions({ transactions, setTransactions }) {
+export default function Transactions({ user, transactions, setTransactions }) {
   const [formData, setFormData] = useState({
     description: "",
     amount: "",
@@ -40,34 +41,31 @@ export default function Transactions({ transactions, setTransactions }) {
 
   const handleAddTransaction = async (e) => {
     e.preventDefault();
-    try {
-      const res = await fetch("/api/transactions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-      if (res.ok) {
-        const newTx = await res.json();
-        setTransactions([...transactions, newTx]);
-        
-        // Reset description and amount, but keep the current local date
-        const today = new Date();
-        const localDate = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-        setFormData({ ...formData, description: "", amount: "", date: localDate });
-      }
-    } catch (err) {
-      console.error("Error adding transaction", err);
+    if (!user) {
+      alert("You must be logged in to add transactions.");
+      return;
+    }
+    
+    const newTx = await addTransaction(user.uid, formData);
+    if (newTx) {
+      setTransactions([newTx, ...transactions]); // Prepend for immediate UI update
+      
+      // Reset description and amount, but keep the current local date
+      const today = new Date();
+      const localDate = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+      setFormData({ ...formData, description: "", amount: "", date: localDate });
+    } else {
+      alert("Failed to add transaction. Please try again.");
     }
   };
 
   const handleDelete = async (id) => {
-    try {
-      const res = await fetch(`/api/transactions/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        setTransactions(transactions.filter((t) => t.id !== id));
-      }
-    } catch (err) {
-      console.error("Error deleting transaction", err);
+    if (!user) return;
+    const success = await deleteTransaction(user.uid, id);
+    if (success) {
+      setTransactions(transactions.filter((t) => t.id !== id));
+    } else {
+      alert("Failed to delete transaction.");
     }
   };
 

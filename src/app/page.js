@@ -6,9 +6,13 @@ import Transactions from "../components/Transactions";
 import Analytics from "../components/Analytics";
 import Savings from "../components/Savings";
 import AuthModal from "../components/AuthModal";
+import { auth } from "../lib/firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { fetchTransactions } from "../lib/db";
 
 export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const [activeView, setActiveView] = useState("dashboard");
   const [isLightMode, setIsLightMode] = useState(false);
 
@@ -22,13 +26,31 @@ export default function Home() {
       setIsLightMode(true);
       document.body.classList.add("light-theme");
     }
-    
-    // Fetch initial data from Express API
-    fetch("/api/transactions")
-      .then((res) => res.json())
-      .then((data) => setTransactions(data.transactions || []))
-      .catch((err) => console.error(err));
+    // Listen to Firebase Auth state
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setCurrentUser(user);
+        setIsAuthenticated(true);
+        // Fetch user's private data from Firestore
+        const userTxs = await fetchTransactions(user.uid);
+        setTransactions(userTxs);
+      } else {
+        setCurrentUser(null);
+        setIsAuthenticated(false);
+        setTransactions([]);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (e) {
+      console.error("Logout failed", e);
+    }
+  };
 
   const toggleTheme = () => {
     setIsLightMode(!isLightMode);
@@ -43,12 +65,13 @@ export default function Home() {
         setActiveView={setActiveView} 
         toggleTheme={toggleTheme} 
         isLightMode={isLightMode} 
+        onLogout={handleLogout}
       />
       <main className="main-content">
 
         {/* View Switcher */}
         {activeView === "dashboard" && <Dashboard transactions={transactions} />}
-        {activeView === "transactions" && <Transactions transactions={transactions} setTransactions={setTransactions} />}
+        {activeView === "transactions" && <Transactions user={currentUser} transactions={transactions} setTransactions={setTransactions} />}
         {activeView === "analytics" && <Analytics transactions={transactions} />}
         {activeView === "savings" && <Savings />}
       </main>

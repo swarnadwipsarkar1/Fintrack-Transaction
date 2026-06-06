@@ -1,5 +1,8 @@
 "use client";
 import { useState } from "react";
+import { auth } from "../lib/firebase";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, fetchSignInMethodsForEmail } from "firebase/auth";
+import { sendEmailOTP, generateOTP } from "../lib/email";
 
 export default function AuthModal({ onLogin }) {
   const [view, setView] = useState("main"); // main, otp, forgot-email, forgot-reset
@@ -7,25 +10,93 @@ export default function AuthModal({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  
+  const [currentOTP, setCurrentOTP] = useState(null);
+  const [otpInput, setOtpInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleMainSubmit = (e) => {
+  const handleMainSubmit = async (e) => {
     e.preventDefault();
+    
     if (isLoginTab) {
-      // Simulate login
-      onLogin();
+      setIsLoading(true);
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        onLogin();
+      } catch (err) {
+        alert(err.message);
+      }
+      setIsLoading(false);
     } else {
-      // Simulate register
-      if (password.length < 6) {
-        alert("Password must contain at least 6 letters");
+      // Register Validations
+      if (password !== confirmPassword) {
+        alert("password is not same");
         return;
       }
-      setView("otp");
+      if (password.length < 6) {
+        alert("password must be of at least 6 characters");
+        return;
+      }
+      
+      setIsLoading(true);
+      try {
+        // Check if email already in use
+        const methods = await fetchSignInMethodsForEmail(auth, email);
+        if (methods.length > 0) {
+          alert("email already in use");
+          setIsLoading(false);
+          return;
+        }
+      } catch (error) {
+        // Ignore operation-not-allowed if email enumeration is disabled
+        if (error.code !== 'auth/operation-not-allowed') {
+           console.warn("Could not pre-check email existence:", error);
+        }
+      }
+
+      // Generate and Send OTP
+      const otp = generateOTP();
+      setCurrentOTP(otp);
+      
+      const success = await sendEmailOTP(email, otp);
+      if (success) {
+        setView("otp");
+      } else {
+        alert("Failed to send OTP to your email.");
+      }
+      setIsLoading(false);
     }
   };
 
-  const handleOtpSubmit = (e) => {
+  const handleOtpSubmit = async (e) => {
     e.preventDefault();
-    onLogin();
+    if (otpInput !== currentOTP) {
+      alert("Invalid OTP! Try again.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      onLogin(); // Authentication listener in page.js will also catch this
+    } catch (err) {
+      alert(err.message);
+    }
+    setIsLoading(false);
+  };
+
+  const handleForgotSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert("A password reset link has been securely sent to your email!");
+      setView("main");
+      setIsLoginTab(true);
+    } catch (err) {
+      alert(err.message);
+    }
+    setIsLoading(false);
   };
 
   return (
@@ -41,6 +112,7 @@ export default function AuthModal({ onLogin }) {
 
             <div className="auth-tabs" style={{ display: "flex", gap: 10, marginBottom: 20 }}>
               <button 
+                type="button"
                 className="submit-btn" 
                 style={{ flex: 1, background: isLoginTab ? "var(--accent-blue)" : "var(--bg-hover)", color: isLoginTab ? "#fff" : "var(--text)" }}
                 onClick={() => setIsLoginTab(true)}
@@ -48,6 +120,7 @@ export default function AuthModal({ onLogin }) {
                 Login
               </button>
               <button 
+                type="button"
                 className="submit-btn" 
                 style={{ flex: 1, background: !isLoginTab ? "var(--accent-blue)" : "var(--bg-hover)", color: !isLoginTab ? "#fff" : "var(--text)" }}
                 onClick={() => setIsLoginTab(false)}
@@ -106,8 +179,8 @@ export default function AuthModal({ onLogin }) {
                 </div>
               )}
 
-              <button type="submit" className="submit-btn" style={{ width: "100%", fontSize: 16 }}>
-                {isLoginTab ? "Login" : "Register"}
+              <button type="submit" className="submit-btn" disabled={isLoading} style={{ width: "100%", fontSize: 16 }}>
+                {isLoading ? "Processing..." : (isLoginTab ? "Login" : "Register")}
               </button>
             </form>
           </div>
@@ -130,11 +203,13 @@ export default function AuthModal({ onLogin }) {
                   placeholder="000000" 
                   maxLength="6" 
                   required 
+                  value={otpInput}
+                  onChange={(e) => setOtpInput(e.target.value)}
                   style={{ width: "100%", textAlign: "center", fontSize: 24, letterSpacing: "0.5em", padding: 15 }} 
                 />
               </div>
-              <button type="submit" className="submit-btn" style={{ width: "100%", fontSize: 16, marginBottom: 15 }}>
-                Verify OTP
+              <button type="submit" className="submit-btn" disabled={isLoading} style={{ width: "100%", fontSize: 16, marginBottom: 15 }}>
+                {isLoading ? "Creating Account..." : "Verify OTP"}
               </button>
               <a href="#" onClick={(e) => { e.preventDefault(); setView("main"); }} style={{ color: "var(--text-muted)", fontSize: 13, textDecoration: "none" }}>
                 &larr; Back
@@ -152,51 +227,20 @@ export default function AuthModal({ onLogin }) {
             <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 15, textAlign: "center" }}>
               Enter your email to receive a secure password reset link.
             </p>
-            <div style={{ background: "rgba(255, 68, 68, 0.1)", borderLeft: "3px solid var(--danger-color)", padding: 10, marginBottom: 20, borderRadius: 4 }}>
-              <p style={{ fontSize: 13, color: "var(--danger-color)", margin: 0, textAlign: "center" }}>
-                <strong>⚠️ Important:</strong> The reset link is automated and will likely go to your <strong>Spam / Junk</strong> folder.
-              </p>
-            </div>
-
-            <form noValidate onSubmit={(e) => { e.preventDefault(); setView("forgot-reset"); }}>
+            
+            <form noValidate onSubmit={handleForgotSubmit}>
               <div className="form-group" style={{ marginBottom: 25 }}>
                 <label>Email Address</label>
-                <input type="email" required style={{ width: "100%" }} />
+                <input type="email" required style={{ width: "100%" }} value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
-              <button type="submit" className="submit-btn" style={{ width: "100%", fontSize: 16, marginBottom: 15 }}>
-                Send Reset Mail
+              <button type="submit" className="submit-btn" disabled={isLoading} style={{ width: "100%", fontSize: 16, marginBottom: 15 }}>
+                {isLoading ? "Sending Link..." : "Send Reset Mail"}
               </button>
               <div style={{ textAlign: "center" }}>
                 <a href="#" onClick={(e) => { e.preventDefault(); setView("main"); }} style={{ color: "var(--text-muted)", fontSize: 13, textDecoration: "none" }}>
                   &larr; Back to Login
                 </a>
               </div>
-            </form>
-          </div>
-        )}
-
-        {/* VIEW 4: FORGOT PASSWORD (RESET) */}
-        {view === "forgot-reset" && (
-          <div id="auth-view-forgot-reset">
-            <div className="modal-header" style={{ justifyContent: "center", borderBottom: "none", marginBottom: 5 }}>
-              <h2 style={{ fontSize: 24 }}>New Password</h2>
-            </div>
-            <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 20, textAlign: "center" }}>
-              Enter your new password below.
-            </p>
-
-            <form noValidate onSubmit={(e) => { e.preventDefault(); setView("main"); }}>
-              <div className="form-group" style={{ marginBottom: 15 }}>
-                <label>New Password</label>
-                <input type="password" required style={{ width: "100%" }} />
-              </div>
-              <div className="form-group" style={{ marginBottom: 25 }}>
-                <label>Confirm New Password</label>
-                <input type="password" required style={{ width: "100%" }} />
-              </div>
-              <button type="submit" className="submit-btn" style={{ width: "100%", fontSize: 16 }}>
-                Reset Password
-              </button>
             </form>
           </div>
         )}
