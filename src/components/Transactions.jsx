@@ -1,6 +1,20 @@
 "use client";
 import { useState } from "react";
-import { Download, Upload, Pencil, Trash2 } from "lucide-react";
+import { Download, Upload, Pencil, Trash2, Briefcase, ShoppingBag, Utensils, Car, Tv, HeartPulse, Home, Gift, MoreHorizontal } from "lucide-react";
+
+const getCategoryIcon = (category) => {
+  switch (category) {
+    case 'Salary': return <Briefcase size={20} />;
+    case 'Shopping': return <ShoppingBag size={20} />;
+    case 'Food': return <Utensils size={20} />;
+    case 'Transport': return <Car size={20} />;
+    case 'Entertainment': return <Tv size={20} />;
+    case 'Health': return <HeartPulse size={20} />;
+    case 'Rent': return <Home size={20} />;
+    case 'Gift': return <Gift size={20} />;
+    default: return <MoreHorizontal size={20} />;
+  }
+};
 
 export default function Transactions({ transactions, setTransactions }) {
   const [formData, setFormData] = useState({
@@ -151,30 +165,25 @@ export default function Transactions({ transactions, setTransactions }) {
           <div className="empty-state">No transactions found.</div>
         ) : (
           filteredTransactions.map((tx) => (
-            <li key={tx.id} className="transaction-item">
-              <div className="transaction-info-wrap">
-                <div className={`transaction-icon ${tx.type === "income" ? "income-icon" : "expense-icon"}`}>
-                   <span style={{ fontSize: '18px' }}>{tx.type === 'income' ? '📈' : '📉'}</span>
-                </div>
-                <div className="transaction-info">
-                  <div className="transaction-desc">
-                    {tx.description} <span className="transaction-badge">{tx.category}</span>
-                  </div>
-                  <div className="transaction-meta">{tx.date}</div>
-                </div>
+            <li key={tx.id} className={tx.type === "income" ? "income-item" : "expense-item"}>
+              <div className="tx-icon">
+                 {getCategoryIcon(tx.category)}
               </div>
-              <div className="transaction-actions-wrap">
-                <span className={`transaction-amount ${tx.type === "income" ? "income-amt" : "expense-amt"}`}>
-                  {tx.type === "income" ? "+" : "-"}${Number(tx.amount).toFixed(2)}
-                </span>
-                <div className="transaction-actions">
-                  <button className="edit-btn" aria-label="Edit transaction">
-                    <Pencil size={14} />
-                  </button>
-                  <button className="delete-btn" aria-label="Delete transaction" onClick={() => handleDelete(tx.id)}>
-                    <Trash2 size={14} />
-                  </button>
-                </div>
+              <div className="tx-info">
+                <div className="tx-desc">{tx.description}</div>
+                <div className="tx-meta">{tx.date}</div>
+              </div>
+              <span className="tx-badge">{tx.category}</span>
+              <span className="tx-amount">
+                 {tx.type === "income" ? "+" : "-"}${Number(tx.amount).toFixed(2)}
+              </span>
+              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                <button className="edit-btn" aria-label="Edit transaction">
+                  <Pencil size={14} />
+                </button>
+                <button className="delete-btn" aria-label="Delete transaction" onClick={() => handleDelete(tx.id)}>
+                  <Trash2 size={14} />
+                </button>
               </div>
             </li>
           ))
