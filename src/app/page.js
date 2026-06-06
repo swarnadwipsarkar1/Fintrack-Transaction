@@ -35,7 +35,7 @@ export default function Home() {
   };
 
   return (
-    <div className="layout-wrapper">
+    <>
       <Sidebar 
         activeView={activeView} 
         setActiveView={setActiveView} 
@@ -59,6 +59,6 @@ export default function Home() {
         {activeView === "analytics" && <Analytics transactions={transactions} />}
         {activeView === "savings" && <Savings />}
       </main>
-    </div>
+    </>
   );
 }
