@@ -1,25 +1,27 @@
 "use client";
-import { PieChart, List, Target, LogOut, Sun, Moon } from "lucide-react";
+import { Wallet, LayoutDashboard, ArrowRightLeft, BarChart3, Moon, LogOut, Sun } from "lucide-react";
 
 export default function Sidebar({ activeView, setActiveView, toggleTheme, isLightMode }) {
   return (
     <aside>
       <div className="sidebar-logo">
         <div className="logo-icon">
-          <PieChart size={22} color="white" />
+          <Wallet size={24} />
         </div>
         <h1>FinTrack</h1>
       </div>
 
-      <nav className="sidebar-nav">
+      <p className="nav-label">Menu</p>
+
+      <nav>
         <ul>
-          <li className="nav-label">Main Menu</li>
           <li>
             <button
               className={`nav-btn ${activeView === "dashboard" ? "active" : ""}`}
               onClick={() => setActiveView("dashboard")}
             >
-              <PieChart size={18} /> Dashboard
+              <span className="nav-icon"><LayoutDashboard size={20} /></span>
+              Dashboard
             </button>
           </li>
           <li>
@@ -27,28 +29,36 @@ export default function Sidebar({ activeView, setActiveView, toggleTheme, isLigh
               className={`nav-btn ${activeView === "transactions" ? "active" : ""}`}
               onClick={() => setActiveView("transactions")}
             >
-              <List size={18} /> Transactions
+              <span className="nav-icon"><ArrowRightLeft size={20} /></span>
+              Transactions
             </button>
           </li>
           <li>
             <button
-              className={`nav-btn ${activeView === "savings" ? "active" : ""}`}
-              onClick={() => setActiveView("savings")}
+              className={`nav-btn ${activeView === "analytics" ? "active" : ""}`}
+              onClick={() => setActiveView("analytics")}
             >
-              <Target size={18} /> Savings Goals
+              <span className="nav-icon"><BarChart3 size={20} /></span>
+              Analytics
             </button>
           </li>
         </ul>
       </nav>
 
-      <div className="sidebar-footer">
-        <button className="theme-toggle" onClick={toggleTheme}>
-          {isLightMode ? <Sun size={18} /> : <Moon size={18} />}
-          <span>{isLightMode ? "Light Mode" : "Dark Mode"}</span>
-        </button>
-        <button className="logout-btn">
-          <LogOut size={18} /> Logout
-        </button>
+      <div className="sidebar-bottom-controls">
+        <div className="theme-toggle-wrap">
+          <button className="theme-toggle-btn" onClick={toggleTheme}>
+            <span className="toggle-icon">{isLightMode ? <Sun size={20} /> : <Moon size={20} />}</span>
+            <span className="toggle-text">{isLightMode ? "Light Mode" : "Dark Mode"}</span>
+          </button>
+        </div>
+
+        <div className="auth-control-wrap" style={{ marginTop: 10 }}>
+          <button className="theme-toggle-btn" style={{ color: "var(--danger-color)" }}>
+            <span className="toggle-icon"><LogOut size={20} /></span>
+            <span className="toggle-text">Log Out</span>
+          </button>
+        </div>
       </div>
     </aside>
   );

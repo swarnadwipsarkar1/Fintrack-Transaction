@@ -45,16 +45,7 @@ export default function Home() {
         isLightMode={isLightMode} 
       />
       <main className="main-content">
-        <header className="page-header">
-          <div className="header-greeting">
-            <h2>Welcome back, <span>User</span>!</h2>
-            <p className="subtitle">Here's your financial overview.</p>
-          </div>
-          <div className="mobile-menu-btn" id="mobile-menu-btn">
-             <i data-lucide="menu"></i>
-          </div>
-        </header>
-        
+
         {/* View Switcher */}
         {activeView === "dashboard" && <Dashboard transactions={transactions} />}
         {activeView === "transactions" && <Transactions transactions={transactions} setTransactions={setTransactions} />}
