@@ -5,8 +5,10 @@ import Dashboard from "../components/Dashboard";
 import Transactions from "../components/Transactions";
 import Analytics from "../components/Analytics";
 import Savings from "../components/Savings";
+import AuthModal from "../components/AuthModal";
 
 export default function Home() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeView, setActiveView] = useState("dashboard");
   const [isLightMode, setIsLightMode] = useState(false);
 
@@ -59,6 +61,8 @@ export default function Home() {
         {activeView === "analytics" && <Analytics transactions={transactions} />}
         {activeView === "savings" && <Savings />}
       </main>
+      
+      {!isAuthenticated && <AuthModal onLogin={() => setIsAuthenticated(true)} />}
     </>
   );
 }
