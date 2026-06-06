@@ -9,7 +9,7 @@ export default function Savings() {
   ]);
 
   return (
-    <section id="savings-view" className="view-section active">
+    <section id="savings-view" className="page-section active-section">
       <div className="page-header">
         <h2>Savings Goals</h2>
         <p>Track your long-term financial targets</p>

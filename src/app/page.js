@@ -45,7 +45,7 @@ export default function Home() {
         isLightMode={isLightMode} 
       />
       <main className="main-content">
-        <header className="top-header">
+        <header className="page-header">
           <div className="header-greeting">
             <h2>Welcome back, <span>User</span>!</h2>
             <p className="subtitle">Here's your financial overview.</p>

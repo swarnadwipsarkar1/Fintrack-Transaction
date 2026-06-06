@@ -51,7 +51,7 @@ export default function Transactions({ transactions, setTransactions }) {
   );
 
   return (
-    <section id="transactions-view" className="view-section active">
+    <section id="transactions-section" className="page-section active-section">
       <div className="page-header">
         <h2>Transactions</h2>
         <p>Add and manage your income & expenses</p>
