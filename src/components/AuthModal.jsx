@@ -29,7 +29,7 @@ export default function AuthModal({ onLogin }) {
   };
 
   return (
-    <div id="auth-modal" className="modal-overlay" style={{ display: "flex", background: "rgba(0, 0, 0, 0.95)", zIndex: 9999 }}>
+    <div id="auth-modal" className="modal-overlay active" style={{ display: "flex", opacity: 1, pointerEvents: "auto", background: "rgba(0, 0, 0, 0.95)", zIndex: 9999 }}>
       <div className="modal-content" style={{ maxWidth: 400, width: "100%" }}>
         
         {/* VIEW 1: LOGIN / REGISTER */}
