@@ -35,6 +35,7 @@ export default function Analytics({ transactions }) {
   useEffect(() => {
     // Dynamic grid color based on theme
     const color = getComputedStyle(document.body).getPropertyValue("--border").trim() || "rgba(148, 163, 184, 0.2)";
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setGridColor(color);
   }, []);
 

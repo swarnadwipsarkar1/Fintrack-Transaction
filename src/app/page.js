@@ -23,6 +23,7 @@ export default function Home() {
     // Load theme preference
     const storedTheme = localStorage.getItem("fintrack-theme");
     if (storedTheme === "light") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsLightMode(true);
       document.body.classList.add("light-theme");
     }

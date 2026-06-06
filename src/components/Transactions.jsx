@@ -32,6 +32,7 @@ export default function Transactions({ user, transactions, setTransactions }) {
     // Automatically fetch the user's current local day
     const today = new Date();
     const localDate = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFormData(prev => ({ ...prev, date: localDate }));
   }, []);
 
