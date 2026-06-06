@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Download, Upload, Pencil, Trash2, Briefcase, ShoppingBag, Utensils, Car, Tv, HeartPulse, Home, Gift, MoreHorizontal } from "lucide-react";
 
 const getCategoryIcon = (category) => {
@@ -21,11 +21,18 @@ export default function Transactions({ transactions, setTransactions }) {
     description: "",
     amount: "",
     type: "expense",
-    date: new Date().toISOString().split("T")[0],
+    date: "", // Will be set by useEffect to avoid hydration mismatch
     category: "Food",
   });
 
   const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    // Automatically fetch the user's current local day
+    const today = new Date();
+    const localDate = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+    setFormData(prev => ({ ...prev, date: localDate }));
+  }, []);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -42,7 +49,11 @@ export default function Transactions({ transactions, setTransactions }) {
       if (res.ok) {
         const newTx = await res.json();
         setTransactions([...transactions, newTx]);
-        setFormData({ ...formData, description: "", amount: "" }); // Reset some fields
+        
+        // Reset description and amount, but keep the current local date
+        const today = new Date();
+        const localDate = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+        setFormData({ ...formData, description: "", amount: "", date: localDate });
       }
     } catch (err) {
       console.error("Error adding transaction", err);
