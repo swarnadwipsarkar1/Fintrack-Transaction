@@ -75,7 +75,14 @@ export default function Analytics({ transactions }) {
     plugins: { legend: { display: false } },
     scales: {
       x: { grid: { display: false } },
-      y: { grid: { color: gridColor } },
+      y: { 
+        grid: { color: gridColor },
+        ticks: {
+          callback: function(value) {
+            return '$' + value;
+          }
+        }
+      },
     },
   };
 
@@ -125,17 +132,36 @@ export default function Analytics({ transactions }) {
   const barOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
     scales: {
       x: { grid: { display: false } },
-      y: { grid: { color: gridColor }, beginAtZero: true },
+      y: { 
+        grid: { color: gridColor }, 
+        beginAtZero: true,
+        ticks: {
+          callback: function(value) {
+            return '$' + value;
+          }
+        }
+      },
     },
   };
 
   return (
     <section id="analytics-section" className="page-section active-section">
-      <div className="page-header">
-        <h2>Analytics</h2>
-        <p>Visual breakdown of your finances</p>
+      <div className="page-header" style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", display: "flex" }}>
+        <div>
+          <h2>Analytics</h2>
+          <p>Visual breakdown of your finances</p>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <label htmlFor="analytics-timeframe-select" style={{ fontSize: 13, color: "var(--text-secondary)", fontWeight: 500 }}>Timeframe:</label>
+          <select id="analytics-timeframe-select">
+            <option value="all">All Time</option>
+            <option value="month">This Month</option>
+            <option value="year">This Year</option>
+          </select>
+        </div>
       </div>
 
       <div className="analytics-card" style={{ marginBottom: 18, width: "100%" }}>
@@ -153,7 +179,7 @@ export default function Analytics({ transactions }) {
             <PieChart size={18} style={{ marginRight: 6, display: "inline-block" }} /> Income vs Expenses
           </h3>
           <div className="chart-container">
-            <Doughnut data={donutData} options={{ responsive: true, maintainAspectRatio: false, cutout: "68%" }} />
+            <Doughnut data={donutData} options={{ responsive: true, maintainAspectRatio: false, cutout: "68%", plugins: { legend: { display: false } } }} />
           </div>
         </div>
 
